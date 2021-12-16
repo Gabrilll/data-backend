@@ -1,0 +1,16 @@
+﻿0:nhd 简介概述
+1:nhd 发病机制
+2:nhd 药物治疗
+3:nhd 一般治疗
+4:nhd 饮食禁忌
+5:nhd 传染性
+6:nhd 中医治疗
+7:nhd 临床表现
+8:nhd 预防
+9:nhd 个人预防措施
+10:nhd 场所防控
+11:nhd 就诊科室
+12:nhd 易感人群
+13:mask 是否可防范COVID-19病毒
+14:appear 患病
+15:hi 你好，我是机器人TT，欢迎来到TrillionCoin~

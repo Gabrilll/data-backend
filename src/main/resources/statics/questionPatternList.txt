@@ -1,0 +1,16 @@
+nhd,def
+nhd,nzd
+nhd,cure,med
+nhd,cure
+nhd,eat,taboo
+nhd,infect
+nhd,tramed,cure
+nhd,sym
+nhd,pre
+nhd,peo,pre
+nhd,place,pre
+nhd,belong
+nhd,easyGet
+mask,pre
+appear,nzd
+hi
