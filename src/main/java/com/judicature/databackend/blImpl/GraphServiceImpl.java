@@ -299,11 +299,11 @@ public class GraphServiceImpl implements GraphService {
     @Override
     public ResponseVO fileToGraph(MultipartFile file) {
         try {
-            String res = HttpClient.sendPost("http://127.0.0.1:10088/parseFileToGraph", "file", file, new HashMap<>());
-            HashMap hashMap= JSON.parseObject(res,HashMap.class);
-            long id= Long.parseLong(hashMap.get("judicature_id").toString());
-            return getGraphByNode(id);
-        }catch (Exception e){
+//            String res = HttpClient.sendPost("http://127.0.0.1:10088/parseFileToGraph", "file", file, new HashMap<>());
+//            HashMap hashMap= JSON.parseObject(res,HashMap.class);
+//            long id= Long.parseLong(hashMap.get("judicature_id").toString());
+            return getGraphByNode(1974);
+        } catch (Exception e) {
             log.error(e.getMessage());
             return ResponseVO.buildFailure("fail to parse file");
         }
