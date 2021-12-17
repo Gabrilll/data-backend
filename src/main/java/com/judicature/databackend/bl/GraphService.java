@@ -1,6 +1,7 @@
 package com.judicature.databackend.bl;
 
 import com.judicature.databackend.vo.ResponseVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -98,4 +99,5 @@ public interface GraphService {
      * @return
      */
     ResponseVO getConstructionGraph();
+    ResponseVO fileToGraph(MultipartFile file);
 }

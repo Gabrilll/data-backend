@@ -99,4 +99,8 @@ public class GraphController {
         return graphService.getConstructionGraph();
     }
 
+    @PostMapping("/fileToGraph")
+    public ResponseVO fileToGraph(@RequestParam("file") MultipartFile file) {
+        return graphService.fileToGraph(file);
+    }
 }
