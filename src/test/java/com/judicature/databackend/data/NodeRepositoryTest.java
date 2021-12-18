@@ -39,9 +39,9 @@ public class NodeRepositoryTest {
         Node node = new Node();
         node.setLabels(List.of("hh", "12"));
         node.setProperties(List.of(new Property("UUID", "2")));
-        long id= nodeRepository.addNode(node);
+        long id = nodeRepository.addNode(node);
         Node res = nodeRepository.getNodeByUUID("2");
-        Assert.assertEquals(id,(long) res.getIdentity());
+        Assert.assertEquals(id, (long) res.getIdentity());
     }
 
     @Test
@@ -99,6 +99,13 @@ public class NodeRepositoryTest {
     @Test
     public void testGetNodeByP() {
         List<Node> nodes = nodeRepository.getNodesByP("诊断", "就是");
+        log.info(String.valueOf(nodes.size()));
+    }
+
+    @Test
+    public void testGetKeyNodes() {
+        String key = "上诉";
+        List<Long> nodes = nodeRepository.getKeyNodes(key);
         log.info(String.valueOf(nodes.size()));
     }
 

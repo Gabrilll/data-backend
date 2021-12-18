@@ -8,6 +8,8 @@ import com.judicature.databackend.config.OSSConfig;
 import com.judicature.databackend.crawler.OntologyConstructionLauncher;
 import com.judicature.databackend.data.GraphRepository;
 import com.judicature.databackend.data.RelationRepository;
+import com.judicature.databackend.mongodb.DocumentRepository;
+import com.judicature.databackend.po.Document;
 import com.judicature.databackend.util.HttpClient;
 import com.judicature.databackend.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,8 @@ public class GraphServiceImpl implements GraphService {
     RelationService relationService;
     @Autowired
     OntologyConstructionLauncher ontologyConstructionLauncher;
+    @Autowired
+    DocumentRepository documentRepository;
 
     /**
      * 随机获取子图
@@ -308,5 +312,17 @@ public class GraphServiceImpl implements GraphService {
             return ResponseVO.buildFailure("fail to parse file");
         }
 
+    }
+
+    @Override
+    public ResponseVO recommend(MultipartFile file) {
+        try {
+            List<Document> documents = documentRepository.findFirst5Docs();
+            List<DocumentVO> res = documents.stream().map(d -> new DocumentVO(d.getId(), d.getName(), new ArrayList<>(d.getKeywords().keySet()), d.getText())).collect(Collectors.toList());
+            return ResponseVO.buildSuccess(res);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseVO.buildFailure(e.getMessage());
+        }
     }
 }

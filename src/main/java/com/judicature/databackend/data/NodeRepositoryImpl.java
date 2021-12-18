@@ -106,6 +106,8 @@ public class NodeRepositoryImpl implements NodeOperations {
         return getNodeByQuery(query);
     }
 
+
+
     private Node getNodeByQuery(String query) {
         Node node = new Node();
         try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {

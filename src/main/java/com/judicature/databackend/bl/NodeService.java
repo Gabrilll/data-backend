@@ -72,4 +72,5 @@ public interface NodeService {
      * 获取全局搜索的节点列表
      */
     ResponseVO getSearchNodes();
+
 }

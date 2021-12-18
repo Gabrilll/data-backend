@@ -103,4 +103,9 @@ public class GraphController {
     public ResponseVO fileToGraph(@RequestParam("file") MultipartFile file) {
         return graphService.fileToGraph(file);
     }
+
+    @PostMapping("/recommend")
+    public ResponseVO recommend(@RequestParam("file")MultipartFile file){
+        return graphService.recommend(file);
+    }
 }
