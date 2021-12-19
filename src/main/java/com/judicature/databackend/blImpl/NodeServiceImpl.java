@@ -11,15 +11,16 @@ import com.judicature.databackend.po.Node;
 import com.judicature.databackend.util.ChineseCharToEnUtil;
 import com.judicature.databackend.util.VO2PO;
 import com.judicature.databackend.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class NodeServiceImpl implements NodeService {
     @Autowired
@@ -175,9 +176,8 @@ public class NodeServiceImpl implements NodeService {
         if (!res.isEmpty()) {
             return ResponseVO.buildSuccess(res);
         }
-        String[] labelsList = new String[]{"疾病", "科室",
-                "中药", "西药", "化学药品", "呼吸系统用药", "神经系统用药", "血液系统用药", "外科用药", "抗微生物药",
-                "症状",
+        String[] labelsList = new String[]{"刑事案件", "敲诈勒索",
+                "医疗事故", "人民检察院", "人民法院", "仲裁", "公共交通"
         };
 
         Map<String, Map<String, List<NodeVO>>> diseaseList = new HashMap<>();
@@ -288,12 +288,58 @@ public class NodeServiceImpl implements NodeService {
         }
     }
 
-    public double calculateSimilarity(String n1, String n2) {
-        Document d1 =documentRepository.findDistinctByName(n1);
-        Document d2=documentRepository.findDistinctByName(n2);
-        List<String> k1= new ArrayList<>(d1.getKeywords().keySet());
-        List<String> k2=new ArrayList<>(d2.getKeywords().keySet());
-//        List<Node> nodes=graphRepository.filterByNodeLabels()
-        return 0;
+    @Override
+    public List<DocumentVO> recommend(String name) {
+//        NodeVO doc = VO2PO.toNodeVO(nodeRepository.getNodeByName(name));
+//        List<NodeVO> nodes = nodeRepository.getNodeByLabel("裁判文书").stream().map(VO2PO::toNodeVO).collect(Collectors.toList());
+//        log.info("总计" + nodes.size() + "份裁判文书");
+//        Map<String, Double> similarity = new HashMap<>();
+//        for (NodeVO n : nodes) {
+//            if (Objects.equals(n.getIdentity(), doc.getIdentity())) {
+//                continue;
+//            }
+//            similarity.put(n.getPropertyValueByName("name"), calculateSimilarity(n.getPropertyValueByName("name"), doc.getIdentity()));
+//        }
+//        List<Map.Entry<String, Double>> entryArrayList = new ArrayList<>(similarity.entrySet());
+//        entryArrayList.sort(Map.Entry.comparingByValue());
+//        List<DocumentVO> documentVOS = new ArrayList<>();
+//        for (Map.Entry<String, Double> entry : entryArrayList.subList(0, 5)) {
+//            Document document = documentRepository.findDistinctByName(entry.getKey());
+//            DocumentVO documentVO = new DocumentVO(document.getId(), document.getName(), new ArrayList<>(document.getKeywords().keySet()), document.getText());
+//            documentVOS.add(documentVO);
+//        }
+        List<String> docs = nodeRepository.getNearestDocs(name);
+        log.info(String.valueOf(docs.size()));
+        List<Document> res = documentRepository.findDocumentByName(docs);
+        return res.stream().map(d -> new DocumentVO(d.getId(), d.getName(), new ArrayList<>(d.getKeywords().keySet()), d.getText())).collect(Collectors.toList()).subList(0, 5);
+    }
+
+    private double calculateSimilarity(String n1, Long id2) {
+
+        Document d1 = documentRepository.findDistinctByName(n1);
+//        Date date = new Date();
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd :hh:mm:ss");
+//        log.info(dateFormat.format(date));
+        Map<String, Double> keywords = d1.getKeywords();
+        List<Long> res = nodeRepository.getKeyNodes(keywords);
+        log.info(String.valueOf(res.size()));
+        List<Double> weight = nodeRepository.getDistanceBetweenNodes(id2, res);
+
+//        for (String k : keys) {
+//            List<Long> nodes = nodeRepository.getKeyNodes(k);
+//            nodes.addAll(nodeRepository.getKeyNodesByEdge(k));
+//            nodes.removeIf(n -> Objects.equals(n, id2));
+////            log.info(dateFormat.format(date));
+//            List<Long> dis = nodeRepository.getDistanceBetweenNodes(id2, nodes);
+//            for (long d : dis) {
+//                if (d > 0) {
+//                    weight += keywords.get(k) / d;
+//                }
+//            }
+//
+//        }
+        log.info(n1 + ":" + weight);
+
+        return weight.stream().reduce(Double::sum).get();
     }
 }

@@ -109,4 +109,25 @@ public class NodeRepositoryTest {
         log.info(String.valueOf(nodes.size()));
     }
 
+    @Test
+    public void testGetKeyNodesByEdge() {
+        String key = "上诉";
+        List<Long> nodes = nodeRepository.getKeyNodesByEdge(key);
+        log.info(String.valueOf(nodes.size()));
+    }
+
+    @Test
+    public void getDistanceBetweenNodes() {
+        long res = nodeRepository.getDistanceBetweenNodes(1193L, 1196L);
+        log.info(String.valueOf(res));
+    }
+
+    @Test
+    public void testGetDistance() {
+        List<Double> res = nodeRepository.getDistanceBetweenNodes(1993L, List.of(1996L));
+        log.info(String.valueOf(res));
+    }
+
+
+
 }

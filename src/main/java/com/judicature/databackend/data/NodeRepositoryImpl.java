@@ -10,8 +10,7 @@ import org.neo4j.driver.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -84,28 +83,115 @@ public class NodeRepositoryImpl implements NodeOperations {
 
     @Override
     public List<Node> getNodeByLabel(String label) {
-        String query = "MATCH (n:" + label + ") RETURN id(n) as identity,labels(n) as labels,properties(n) as properties LIMIT 50\n";
+        String query = "MATCH (n:" + label + ") RETURN id(n) as identity,labels(n) as labels,properties(n) as properties\n";
         return queryToNodeList(query);
     }
 
     @Override
     public Node getNodeByStartAndRe(String startName, String reName) {
-        String query = "MATCH (n1)-[r]->(n) WHERE n1.name=\"" + startName + "\" AND r.name=\""+reName+"\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties\n";
+        String query = "MATCH (n1)-[r]->(n) WHERE n1.name=\"" + startName + "\" AND r.name=\"" + reName + "\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties\n";
         return getNodeByQuery(query);
     }
 
     @Override
     public List<Node> getNodesByP(String startName, String reName) {
-        String query = "MATCH (n1)-[r]->(n) WHERE n1.name=\"" + startName + "\" AND r.name=\""+reName+"\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties\n";
+        String query = "MATCH (n1)-[r]->(n) WHERE n1.name=\"" + startName + "\" AND r.name=\"" + reName + "\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties\n";
         return queryToNodeList(query);
     }
 
     @Override
     public Node getNodeByUUID(String uuid) {
-        String query="MATCH (n) WHERE n.UUID=\""+uuid+"\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties LIMIT 1";
+        String query = "MATCH (n) WHERE n.UUID=\"" + uuid + "\" RETURN id(n) as identity,labels(n) as labels,properties(n) as properties LIMIT 1";
         return getNodeByQuery(query);
     }
 
+    @Override
+    public List<Long> getKeyNodes(String key) {
+        String query = "MATCH (n) WHERE '" + key + "' IN n.name OR '" + key + "' IN labels(n) OR '" + key + "' in keys(n) OR '" + key + "' IN apoc.map.mget(properties(n), keys(n)) RETURN id(n) as id LIMIT 10";
+        return getIdsByKey(query);
+    }
+
+    @Override
+    public List<Long> getKeyNodesByEdge(String key) {
+        String query = "MATCH (m:裁判文书)-[r]-(n:裁判文书)\n" +
+                " WHERE '" + key + "' IN r.name OR type(r) contains '" + key + "'" +
+                " OR '" + key + "' in keys(r) OR '" + key + "' IN apoc.map.mget(properties(r), keys(r)) RETURN id(m) as id LIMIT 10";
+        return getIdsByKey(query);
+    }
+
+    @Override
+    public Long getDistanceBetweenNodes(Long id1, Long id2) {
+        String query = "MATCH (a),(b)  WHERE id(a)=" + id1 + " AND id(b)=" + id2 + " WITH length(shortestPath((a)-[*]-(b))) AS l RETURN CASE WHEN l>0 THEN l ELSE 0 END";
+        long res = 0L;
+        try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {
+            res = transaction.run(query).single().get(0).asLong();
+            transaction.commit();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return res;
+    }
+
+    @Override
+    public List<Double> getDistanceBetweenNodes(Long id1, List<Long> id2) {
+        String query = "UNWIND" + id2 + " AS x Match (a),(b)  WHERE id(a)=x AND id(b)=" + id1 + " WITH length(shortestPath((a)-[*]-(b))) AS l ,a WITH a, CASE WHEN l>0 THEN l ELSE 2147483647 END AS dis RETURN a.weight/dis as weight";
+        List<Double> res = new ArrayList<>();
+        try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {
+            res = transaction.run(query).list(r -> r.get("weight").asDouble());
+            transaction.commit();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return res;
+    }
+
+    @Override
+    public List<Long> getKeyNodes(Map<String, Double> weights) {
+        List<String> key = new ArrayList<>(weights.keySet());
+        String keyList = toLabelStr(key);
+        String query = "call{UNWIND " + keyList + " AS k  MATCH (n) WHERE k IN n.name OR k IN labels(n) OR k in keys(n) OR k IN apoc.map.mget(properties(n), keys(n)) RETURN id(n) as id ,k LIMIT 5" +
+                " UNION UNWIND " + keyList + " AS k MATCH (m:裁判文书)-[r]-(n:裁判文书)" +
+                " WHERE k IN r.name OR type(r) contains k " +
+                " OR k in keys(r) OR k IN apoc.map.mget(properties(r), keys(r)) RETURN k,id(m) as id LIMIT 5} WITH id,k,apoc.map.fromLists(" + keyList + "," + weights.values() + ")" +
+                "AS w MATCH (n) where id(n) = id SET n += {weight:w[k]}" +
+                " RETURN id";
+        Set<Long> res = new HashSet<>();
+        try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {
+            transaction.run(query).list(r -> {
+                res.add(r.get("id").asLong());
+                return null;
+            });
+            transaction.commit();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return new ArrayList<>(res);
+    }
+
+    @Override
+    public List<String> getNearestDocs(String name) {
+        String query = "MATCH (n) where n.name=\"" + name + "\" with n MATCH (m:裁判文书) WHERE id(m)<>id(n) WITH length(shortestPath((n)-[*]-(m)))>0 as l,m.name as name WITH case when l>0 then l else 2147483647 end as l,name return name order by l limit 10";
+        List<String> nodes = new ArrayList<>();
+        try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {
+            nodes = transaction.run(query).list(r -> r.get("name").asString());
+            transaction.commit();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return nodes;
+    }
+
+
+    private List<Long> getIdsByKey(String query) {
+        List<Long> nodes = new ArrayList<>();
+        try (Session session = driver.session(); Transaction transaction = session.beginTransaction()) {
+            nodes = transaction.run(query).list(r -> r.get("id").asLong());
+            transaction.commit();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return nodes;
+    }
 
 
     private Node getNodeByQuery(String query) {

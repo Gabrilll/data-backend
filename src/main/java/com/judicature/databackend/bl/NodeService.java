@@ -1,5 +1,6 @@
 package com.judicature.databackend.bl;
 
+import com.judicature.databackend.vo.DocumentVO;
 import com.judicature.databackend.vo.NodeVO;
 import com.judicature.databackend.vo.ResponseVO;
 
@@ -11,28 +12,32 @@ import java.util.List;
 public interface NodeService {
     /**
      * 添加实体
+     *
      * @param nodeVO
      * @return
      */
-    ResponseVO addNode(NodeVO nodeVO,int graphId);
+    ResponseVO addNode(NodeVO nodeVO, int graphId);
 
     /**
      * 删除实体
+     *
      * @param identity
      * @return
      */
-    ResponseVO deleteNode(Long identity,int graphId);
+    ResponseVO deleteNode(Long identity, int graphId);
 
     /**
      * 更新实体信息
+     *
      * @param nodeVO
      * @return
      */
-    ResponseVO updateNode(NodeVO nodeVO,int graphId);
+    ResponseVO updateNode(NodeVO nodeVO, int graphId);
 
 
     /**
      * 获取所有节点
+     *
      * @param
      * @return
      */
@@ -40,6 +45,7 @@ public interface NodeService {
 
     /**
      * 获取与指定节点相关的节点
+     *
      * @param identity
      * @return
      */
@@ -67,10 +73,13 @@ public interface NodeService {
     List<NodeVO> getNodesByLabel(String label);
 
 
-
     /**
      * 获取全局搜索的节点列表
      */
     ResponseVO getSearchNodes();
+
+    List<DocumentVO> recommend(String name);
+
+
 
 }

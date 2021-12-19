@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface DocumentOperations {
     List<Document> findFirst5Docs();
+    List<Document> findDocumentByName(List<String> name);
 }

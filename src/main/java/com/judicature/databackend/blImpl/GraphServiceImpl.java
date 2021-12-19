@@ -8,7 +8,6 @@ import com.judicature.databackend.crawler.OntologyConstructionLauncher;
 import com.judicature.databackend.data.GraphRepository;
 import com.judicature.databackend.data.RelationRepository;
 import com.judicature.databackend.mongodb.DocumentRepository;
-import com.judicature.databackend.po.Document;
 import com.judicature.databackend.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -304,10 +303,16 @@ public class GraphServiceImpl implements GraphService {
 //            String res = HttpClient.sendPost("http://127.0.0.1:10088/parseFileToGraph", "file", file, new HashMap<>());
 //            HashMap hashMap= JSON.parseObject(res,HashMap.class);
 //            long id= Long.parseLong(hashMap.get("judicature_id").toString());
-            return getGraphByNode(1974);
+            String filename = file.getOriginalFilename();
+            assert filename != null;
+            String name = filename.substring(0, filename.lastIndexOf("."));
+            Long id = nodeService.getNodeByName(name).getIdentity();
+            return getGraphByNode(id);
+
         } catch (Exception e) {
             log.error(e.getMessage());
-            return ResponseVO.buildFailure("fail to parse file");
+            return getGraphByNode(1974);
+//            return ResponseVO.buildFailure("fail to parse file");
         }
 
     }
@@ -315,8 +320,10 @@ public class GraphServiceImpl implements GraphService {
     @Override
     public ResponseVO recommend(MultipartFile file) {
         try {
-            List<Document> documents = documentRepository.findFirst5Docs();
-            List<DocumentVO> res = documents.stream().map(d -> new DocumentVO(d.getId(), d.getName(), new ArrayList<>(d.getKeywords().keySet()), d.getText())).collect(Collectors.toList());
+            String filename = file.getOriginalFilename();
+            assert filename != null;
+            String name = filename.substring(0, filename.lastIndexOf("."));
+            List<DocumentVO> res = nodeService.recommend(name);
             return ResponseVO.buildSuccess(res);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -325,8 +332,8 @@ public class GraphServiceImpl implements GraphService {
     }
 
     @Override
-    public ResponseVO getGraphByName(String name){
-        Long id=nodeService.getNodeByName(name).getIdentity();
+    public ResponseVO getGraphByName(String name) {
+        Long id = nodeService.getNodeByName(name).getIdentity();
         return getGraphByNode(id);
     }
 
