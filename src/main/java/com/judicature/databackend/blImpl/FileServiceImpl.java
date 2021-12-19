@@ -34,9 +34,6 @@ public class FileServiceImpl implements FileService {
     @Autowired
     RelationRepository relationRepository;
 
-    private Logger logger = Logger.getLogger(getClass().getName());
-
-
 
     @Override
     public int json2Dao(MultipartFile mFile) {

@@ -34,8 +34,8 @@ public class GraphController {
 
 
     @PostMapping("/filterByNodeLabels")
-    public ResponseVO filterByNodeLabels(@RequestBody FilterLabelsVO labels,@RequestParam int graphId) {
-        return graphService.filterByNodeLabels(labels.getLabels(),graphId);
+    public ResponseVO filterByNodeLabels(@RequestBody FilterLabelsVO labels, @RequestParam int graphId) {
+        return graphService.filterByNodeLabels(labels.getLabels(), graphId);
     }
 
     @PostMapping("/uploadFile")
@@ -76,7 +76,7 @@ public class GraphController {
 
     @GetMapping("/constructGraph")
     public ResponseVO constructGraph(@RequestParam String startUrl, @RequestParam long pageNum) {
-        return graphService.constructGraph(startUrl,pageNum);
+        return graphService.constructGraph(startUrl, pageNum);
     }
 
     @GetMapping("/getConstructionDetail")
@@ -85,17 +85,17 @@ public class GraphController {
     }
 
     @GetMapping("/stopConstruction")
-    public ResponseVO stopConstruction(){
+    public ResponseVO stopConstruction() {
         return graphService.stopConstruction();
     }
 
     @GetMapping("/getLabelsByGraphId")
-    public ResponseVO getLabelsByGraphId(@RequestParam int graphId){
+    public ResponseVO getLabelsByGraphId(@RequestParam int graphId) {
         return graphService.getLabelsByGraphId(graphId);
     }
 
     @GetMapping("/getConstructionGraph")
-    public ResponseVO getConstructionGraph(){
+    public ResponseVO getConstructionGraph() {
         return graphService.getConstructionGraph();
     }
 
@@ -105,7 +105,12 @@ public class GraphController {
     }
 
     @PostMapping("/recommend")
-    public ResponseVO recommend(@RequestParam("file")MultipartFile file){
+    public ResponseVO recommend(@RequestParam("file") MultipartFile file) {
         return graphService.recommend(file);
+    }
+
+    @GetMapping("/getGraphByName")
+    public ResponseVO getGraphByName(@RequestParam("name") String name){
+        return graphService.getGraphByName(name);
     }
 }

@@ -1,6 +1,5 @@
 package com.judicature.databackend.blImpl;
 
-import com.alibaba.fastjson.JSON;
 import com.judicature.databackend.bl.GraphService;
 import com.judicature.databackend.bl.NodeService;
 import com.judicature.databackend.bl.RelationService;
@@ -10,7 +9,6 @@ import com.judicature.databackend.data.GraphRepository;
 import com.judicature.databackend.data.RelationRepository;
 import com.judicature.databackend.mongodb.DocumentRepository;
 import com.judicature.databackend.po.Document;
-import com.judicature.databackend.util.HttpClient;
 import com.judicature.databackend.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -325,4 +323,12 @@ public class GraphServiceImpl implements GraphService {
             return ResponseVO.buildFailure(e.getMessage());
         }
     }
+
+    @Override
+    public ResponseVO getGraphByName(String name){
+        Long id=nodeService.getNodeByName(name).getIdentity();
+        return getGraphByNode(id);
+    }
+
+
 }

@@ -39,4 +39,5 @@ public interface GraphRepository extends Neo4jRepository<Node,Long>,GraphOperati
     @Query("MATCH (n) return id(n)")
     List<Long> getAllIds();
 
+
 }

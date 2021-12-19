@@ -117,4 +117,6 @@ public interface GraphService {
     ResponseVO fileToGraph(MultipartFile file);
 
     ResponseVO recommend(MultipartFile file);
+
+    ResponseVO getGraphByName(String name);
 }
