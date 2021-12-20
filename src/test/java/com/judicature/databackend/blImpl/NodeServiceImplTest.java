@@ -254,4 +254,6 @@ public class NodeServiceImplTest {
         ResponseVO responseVO = nodeService.getSearchNodes();
         Assert.assertTrue(responseVO.getSuccess());
     }
+
+
 }

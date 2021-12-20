@@ -180,28 +180,30 @@ public class NodeServiceImpl implements NodeService {
                 "医疗事故", "人民检察院", "人民法院", "仲裁", "公共交通"
         };
 
-        Map<String, Map<String, List<NodeVO>>> diseaseList = new HashMap<>();
-        Map<String, Map<String, List<NodeVO>>> medicineList = new HashMap<>();
-        Map<String, Map<String, List<NodeVO>>> list = new HashMap<>();
+        Map<String, Map<String, List<NodeVO>>> cateList = new HashMap<>();
+        Map<String, Map<String, List<NodeVO>>> organizeList = new HashMap<>();
+        Map<String, Map<String, List<NodeVO>>> crimeList = new HashMap<>();
 
         for (String s : labelsList) {
             System.out.println("类别：" + s);
-            List<NodeVO> nodes = getNodesByLabel(s);
+            List<NodeVO> nodes = nodeRepository.getDocByLabel(s).stream().map(VO2PO::toNodeVO).collect(Collectors.toList());
             System.out.println("总数：" + nodes.size());
             Map<String, List<NodeVO>> v = new HashMap<>();
 //            Map<String,Map<String,List<NodeVO>>> nodesList = new HashMap<>();
 //            List<NodeVO> containList = new ArrayList<>();
             String key = "a";
+            int intKey=2008;
             int i = 0;
-            while (i < nodes.size() && key.charAt(0) <= 'z') {
+            while (i < nodes.size() && intKey<=2013) {
                 List<NodeVO> containList = new ArrayList<>();
                 String alphabet = nodes.get(i).getProperties().get("name");
                 String tempKey = ChineseCharToEnUtil.getFirstSpell(alphabet).substring(0, 1);
-                if (tempKey.charAt(0) < 'a' || tempKey.charAt(0) > 'z') {
+                int tmpIntKey=Integer.parseInt(alphabet.substring(1,5));
+                if (tmpIntKey<2008 || tmpIntKey>2013) {
                     i++;
                     continue;
                 }
-                while (tempKey.equals(key) && i < nodes.size()) {
+                while (tmpIntKey==intKey&& i < nodes.size()) {
                     NodeVO n = nodes.get(i);
                     Map<String, String> pro = new HashMap<>();
                     pro.put("name", n.getProperties().get("name"));
@@ -209,33 +211,33 @@ public class NodeServiceImpl implements NodeService {
                     containList.add(n);
                     i++;
                     if (i == nodes.size()) {
-                        v.put(key, containList);
+                        v.put(Integer.toString(intKey), containList);
                         break;
                     }
                     tempKey = ChineseCharToEnUtil.getFirstSpell(nodes.get(i).getProperties().get("name")).substring(0, 1);
+                    tmpIntKey=Integer.parseInt(nodes.get(i).getProperties().get("name").substring(1,5));
                 }
-                v.put(key, containList);
+                v.put(Integer.toString(intKey), containList);
                 key = String.valueOf((char) (key.charAt(0) + 1));
+                intKey++;
             }
-            while (key.charAt(0) <= 'z') {
+            while (intKey <= 2013) {
                 List<NodeVO> emptyList = new ArrayList<>();
-                v.put(key, emptyList);
-                key = String.valueOf((char) (key.charAt(0) + 1));
+                v.put(String.valueOf(intKey), emptyList);
+                intKey++;
             }
 //            nodesList.put(s, v);
 
-            if (s.equals("疾病") || s.equals("科室")) {
-                diseaseList.put(s, v);
-                if (s.equals("科室")) {
-                    res.put("疾病", diseaseList);
-                }
-            } else if (s.equals("症状")) {
-                list.put("症状", v);
-                res.put("病症表现", list);
+            if (s.equals("刑事案件") || s.equals("仲裁")) {
+                cateList.put(s, v);
+                res.put("案件类型", cateList);
+            } else if (s.equals("敲诈勒索")||s.equals("医疗事故")||s.equals("公共交通")) {
+                crimeList.put(s, v);
+                res.put("案由", crimeList);
             } else {
-                medicineList.put(s, v);
-                if (s.equals("抗微生物药")) {
-                    res.put("药物", medicineList);
+                organizeList.put(s, v);
+                if (s.equals("人民检察院")||s.equals("人民法院")) {
+                    res.put("机构", organizeList);
                 }
             }
         }
@@ -267,15 +269,21 @@ public class NodeServiceImpl implements NodeService {
     @Override
     public ResponseVO getSearchNodes() {
         if (searchNodes.isEmpty()) {
-            List<NodeVO> diseaseList = getNodesByLabel("疾病");
-            List<NodeVO> symptomList = getNodesByLabel("症状");
-            if (diseaseList != null) {
-                for (NodeVO nodeVO : diseaseList) {
+            List<NodeVO> cateList = nodeRepository.getDocByLabel("案件").stream().map(VO2PO::toNodeVO).collect(Collectors.toList());
+            List<NodeVO> organizeList = nodeRepository.getDocByLabel("机构").stream().map(VO2PO::toNodeVO).collect(Collectors.toList());
+            List<NodeVO> crimeList = nodeRepository.getDocByLabel("罪").stream().map(VO2PO::toNodeVO).collect(Collectors.toList());
+            if (cateList != null) {
+                for (NodeVO nodeVO : cateList) {
                     searchNodes.put(nodeVO.getProperties().get("name"), nodeVO.getIdentity());
                 }
             }
-            if (symptomList != null) {
-                for (NodeVO nodeVO : symptomList) {
+            if (organizeList != null) {
+                for (NodeVO nodeVO : organizeList) {
+                    searchNodes.put(nodeVO.getProperties().get("name"), nodeVO.getIdentity());
+                }
+            }
+            if (crimeList != null) {
+                for (NodeVO nodeVO : crimeList) {
                     searchNodes.put(nodeVO.getProperties().get("name"), nodeVO.getIdentity());
                 }
             }

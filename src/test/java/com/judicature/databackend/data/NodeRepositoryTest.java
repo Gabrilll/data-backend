@@ -128,6 +128,11 @@ public class NodeRepositoryTest {
         log.info(String.valueOf(res));
     }
 
+    @Test
+    public void testGetDocsByLabel(){
+        List<Node> nodes=nodeRepository.getDocByLabel("撤销");
+        log.info(String.valueOf(nodes.size()));
+    }
 
 
 }

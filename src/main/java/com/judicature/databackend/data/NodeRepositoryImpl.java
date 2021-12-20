@@ -181,6 +181,13 @@ public class NodeRepositoryImpl implements NodeOperations {
         return nodes;
     }
 
+    @Override
+    public List<Node> getDocByLabel(String label) {
+        label = "\"" + label + "\"";
+        String query = "MATCH (n:裁判文书)-[r]-() WHERE " + label + " IN n.name OR " + label + " IN labels(n) OR " + label + " IN keys(n) OR " + label + " IN apoc.map.mget(properties(n), keys(n)) OR r.name CONTAINS "+label+" OR  type(r) CONTAINS "+label+" OR " + label + " IN keys(r) OR " + label + " IN apoc.map.mget(properties(r), keys(r)) RETURN id(n) as identity,labels(n) as labels,properties(n) as properties";
+        return queryToNodeList(query);
+    }
+
 
     private List<Long> getIdsByKey(String query) {
         List<Long> nodes = new ArrayList<>();

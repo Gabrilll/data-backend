@@ -37,4 +37,7 @@ public interface NodeOperations {
     List<Long> getKeyNodes(Map<String, Double> key);
 
     List<String> getNearestDocs(String name);
+
+    List<Node> getDocByLabel(String label);
+
 }
